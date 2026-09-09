@@ -79,3 +79,61 @@ class AudioSegment(models.Model):
         f"{self.lecture.title }--"
         f"Segment {self.sequence}"
       )
+
+
+class TranscriptSegment(models.Model):
+  audio_segment=models.ForeignKey(
+    AudioSegment,on_delete=models.CASCADE,related_name="transcript_segments"
+  )
+  start_time=models.FloatField()
+  end_time=models.FloatField()
+  text=models.TextField()
+  avg_logprob=models.FloatField(null=True,blank=True)
+  no_speech_prob=models.FloatField(null=True,blank=True)
+  created_at=models.DateTimeField(auto_now_add=True)
+  class Meta:
+    ordering=["start_time"]
+  def __str__(self):
+    return (
+      f"{self.audio_segment.lecture.title}"
+       f"{self.start_time:.2f}s"
+       f"{self.end_time:.2f}s"
+    )
+
+
+class Slide(models.Model):
+    lecture = models.ForeignKey(
+        Lecture,
+        on_delete=models.CASCADE,
+        related_name="slides",
+    )
+
+    slide_number = models.PositiveIntegerField()
+
+    image = models.ImageField(
+        upload_to="lectures/slides/"
+    )
+
+    width = models.PositiveIntegerField()
+    height = models.PositiveIntegerField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ["slide_number"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["lecture", "slide_number"],
+                name="unique_lecture_slide_number",
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f"Lecture {self.lecture_id} "
+            f"- Slide {self.slide_number}"
+        )
+
+  
